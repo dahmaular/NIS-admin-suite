@@ -1,4 +1,5 @@
 {
+  "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "admin/dist",
   "installCommand": "npm install",

@@ -17,6 +17,16 @@ export default defineConfig({
       '/uploads': { target: API_TARGET, changeOrigin: true },
     },
   },
+  // `vite preview` serves the production build — same proxy so local prod-build
+  // testing (`npm run build && npm run preview`) exercises the real API too,
+  // matching how Vercel puts admin + API on the same origin via rewrites.
+  preview: {
+    port: 4173,
+    proxy: {
+      '/api': { target: API_TARGET, changeOrigin: true },
+      '/uploads': { target: API_TARGET, changeOrigin: true },
+    },
+  },
   build: {
     outDir: 'dist'
   }
