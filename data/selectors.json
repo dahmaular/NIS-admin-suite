@@ -1,0 +1,130 @@
+{
+  "site.title": {
+    "type": "text",
+    "selector": "title"
+  },
+  "header.logo": {
+    "type": "image",
+    "selector": "img[class*='HeroSection_logo_']"
+  },
+  "header.button1": {
+    "type": "text",
+    "selector": "nav[class*='actionButtons'] button:nth-of-type(1)"
+  },
+  "header.button2": {
+    "type": "text",
+    "selector": "nav[class*='actionButtons'] button:nth-of-type(2)"
+  },
+  "header.button3": {
+    "type": "text",
+    "selector": "nav[class*='actionButtons'] button:nth-of-type(3)"
+  },
+  "hero.heading": {
+    "type": "text",
+    "selector": "h1[class*='heroTitle']"
+  },
+  "hero.image": {
+    "type": "image",
+    "selector": "img[class*='heroImage']"
+  },
+  "about.title": {
+    "type": "text",
+    "selector": "h2[class*='aboutTitle']"
+  },
+  "about.description": {
+    "type": "text",
+    "selector": "p[class*='aboutDescription']"
+  },
+  "about.buttonLabel": {
+    "type": "text",
+    "selector": "button[class*='learnMoreButton']"
+  },
+  "experience.category1": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(1) div[class*='categoryCard']:nth-of-type(1) h3"
+  },
+  "experience.category2": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(1) div[class*='categoryCard']:nth-of-type(2) h3"
+  },
+  "experience.category3": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(1) div[class*='categoryCard']:nth-of-type(3) h3"
+  },
+  "experience.category4": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(2) div[class*='categoryCard']:nth-of-type(1) h3"
+  },
+  "experience.category5": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(2) div[class*='categoryCard']:nth-of-type(2) h3"
+  },
+  "experience.category6": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(2) div[class*='categoryCard']:nth-of-type(3) h3"
+  },
+  "experience.category7": {
+    "type": "text",
+    "selector": "div[class*='categoryRow']:nth-of-type(2) div[class*='categoryCard']:nth-of-type(4) h3"
+  },
+  "stats.title": {
+    "type": "text",
+    "selector": "h2[class*='statisticsTitle']"
+  },
+  "stats.description": {
+    "type": "text",
+    "selector": "p[class*='statisticsDescription']"
+  },
+  "stats.label1": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(1) span[class*='statisticLabel']"
+  },
+  "stats.label2": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(2) span[class*='statisticLabel']"
+  },
+  "stats.label3": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(3) span[class*='statisticLabel']"
+  },
+  "testimonials.title": {
+    "type": "text",
+    "selector": "h2[class*='testimonialsTitle']"
+  },
+  "university.title": {
+    "type": "text",
+    "selector": "h2[class*='universityTitle']"
+  },
+  "footer.addressTitle": {
+    "type": "text",
+    "selector": "div[class*='footerSection']:nth-of-type(1) h4[class*='footerTitle']"
+  },
+  "footer.address": {
+    "type": "html",
+    "selector": "div[class*='addressText']"
+  },
+  "footer.phone": {
+    "type": "text",
+    "selector": "div[class*='phoneText']"
+  },
+  "footer.emailsTitle": {
+    "type": "text",
+    "selector": "div[class*='footerSection']:nth-of-type(2) h4[class*='footerTitle']"
+  },
+  "footer.emailAdmin": {
+    "type": "text",
+    "selector": "div[class*='footerEmails'] p:nth-of-type(1)"
+  },
+  "footer.emailAdmissions": {
+    "type": "text",
+    "selector": "div[class*='footerEmails'] p:nth-of-type(2)"
+  },
+  "footer.emailCareers": {
+    "type": "text",
+    "selector": "div[class*='footerEmails'] p:nth-of-type(3)"
+  },
+  "footer.copyright": {
+    "type": "text",
+    "selector": "p[class*='copyright']"
+  }
+}

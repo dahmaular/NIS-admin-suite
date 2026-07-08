@@ -1,0 +1,11 @@
+node_modules/
+admin/node_modules/
+admin/dist/
+uploads/*
+!uploads/.gitkeep
+.env
+.env.local
+admin/.env.local
+.DS_Store
+nohup.out
+.vercel
