@@ -17,7 +17,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-const REPO = "/Users/adedamolaagunbiade/Documents/Azure/NIS-admin-suite";
+const REPO = path.dirname(fileURLToPath(import.meta.url));
 
 // Fresh root: only copy scripts/ (needed for injector.js/injected-assistant.js),
 // deliberately NOT data/ or uploads/ so we can prove no mkdir is attempted.

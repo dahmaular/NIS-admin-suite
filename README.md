@@ -69,54 +69,62 @@ admin dashboard (Vite, port 5176, proxied to 5175).
 
 ---
 
-## Deploying to Vercel
+## Deploying
 
-One Vercel project hosts **both** the admin dashboard (static, built by Vite) and the API
-(serverless functions under `/api`) — see `vercel.json`. The real public site is **not** part
-of this deployment; it keeps living wherever it lives today.
+**→ Full step-by-step guide: [`DEPLOYMENT.md`](./DEPLOYMENT.md)**
 
-1. **Push this repo to GitHub** (or GitLab/Bitbucket), then in the Vercel dashboard:
-   **Add New → Project → Import** this repo. Vercel auto-detects `vercel.json`.
+The suite deploys as **two separate pieces on two different hosts**:
 
-2. **Set Environment Variables** (Project → Settings → Environment Variables) — required,
-   there is no local-disk fallback on Vercel:
-   | Variable | Value |
-   |---|---|
-   | `ADMIN_PASSWORD` | a strong password (never leave as `changeme`) |
-   | `JWT_SECRET` | a long random string |
-   | `MONGODB_URI` | your MongoDB Atlas connection string |
-   | `MONGODB_DB` | `nis-admin` (or your choice) |
-   | `CLOUDINARY_URL` | `cloudinary://<api_key>:<api_secret>@<cloud_name>` |
-   | `CLOUDINARY_FOLDER` | `nis-admin` (or your choice) |
-   | `VITE_SITE_ORIGIN` | `https://norwegianinternationalschools.com` (build-time; the admin app needs this to link to/preview/pick elements on the real site) |
+- **API** (`api/index.js` wrapping `app.js`) → **Vercel** serverless, at e.g.
+  `https://nis-admin-suite.vercel.app`. Also serves `/injector.js` and
+  `/injected-assistant.js`. `vercel.json` rewrites those three paths to the function;
+  `public/` is the static root so no server source is exposed.
+- **Admin dashboard** (`admin/`, built by Vite) → **cPanel** as plain static files on its
+  own subdomain, e.g. `https://admin.norwegianinternationalschools.com`.
 
-   The app refuses to authenticate if `ADMIN_PASSWORD`/`JWT_SECRET` are left at their
-   insecure defaults on Vercel (`INSECURE_DEFAULTS` guard in `app.js`) — deploy will succeed,
-   but `/api/login` will return a 500 until you set them.
+Because they're on different origins, the admin is told the API's absolute URL at **build
+time** via `VITE_API_BASE` (see `admin/.env.production.example`) — there is no relative
+`/api` in production. Auth is a JWT bearer token in `localStorage`, not a cookie, so the
+cross-origin split needs no cookie/`SameSite` handling.
 
-3. **Deploy.** Vercel runs `npm install` (which builds the admin UI via `postinstall`), then
-   `npm run build` (rebuilds it explicitly per `vercel.json`), and serves `admin/dist` as static
-   output with `/api/*`, `/injector.js` and `/injected-assistant.js` rewritten to the
-   `api/index.js` serverless function.
+The real public site is **not** part of either deployment; it keeps living wherever it
+lives today.
 
-4. **Embed the injector on the real site.** Add this to the `<head>` of
-   norwegianinternationalschools.com (wherever it's hosted), replacing the URL with your
-   Vercel deployment's domain:
-   ```html
-   <script>window.__CONTENT_API_BASE__ = 'https://your-admin-project.vercel.app/api';</script>
-   <script src="https://your-admin-project.vercel.app/injected-assistant.js"></script>
-   <script src="https://your-admin-project.vercel.app/injector.js" defer></script>
-   ```
-   Once that's live, content saved in the admin dashboard applies to the real site on next
-   page load, and the **Element Mappings** / **Live Preview** views (which iframe the real
-   site via `VITE_SITE_ORIGIN`) will show the picker highlighting working against it too —
-   the real site currently sends no `X-Frame-Options`/CSP `frame-ancestors` header, so it can
-   be iframed; if that ever changes, those two views will stop loading and would need the
-   iframe origin explicitly allowed.
+Environment variables required on Vercel (no local-disk fallback exists there):
 
-5. **Local CLI alternative:** `npx vercel` (link the project) then `npx vercel --prod` deploys
-   from your machine using the same `vercel.json`; set the env vars with `npx vercel env add`
-   or in the dashboard first.
+| Variable | Value |
+|---|---|
+| `ADMIN_PASSWORD` | a strong password (never leave as `changeme`) |
+| `JWT_SECRET` | a long random string |
+| `MONGODB_URI` | your MongoDB Atlas connection string |
+| `MONGODB_DB` | `nis-admin` (or your choice) |
+| `CLOUDINARY_URL` | `cloudinary://<api_key>:<api_secret>@<cloud_name>` |
+| `CLOUDINARY_FOLDER` | `nis-admin` (or your choice) |
+
+The app refuses to authenticate if `ADMIN_PASSWORD`/`JWT_SECRET` are left at their
+insecure defaults on Vercel (`INSECURE_DEFAULTS` guard in `app.js`) — deploy will succeed,
+but `/api/login` will return a 500 until you set them.
+
+`VITE_SITE_ORIGIN` and `VITE_API_BASE` are **build-time** variables for the admin, so they
+belong in `admin/.env.production` on the machine that runs the build — *not* in Vercel's
+environment, which no longer builds the admin.
+
+**Embed the injector on the real site.** Add this to the `<head>` of
+norwegianinternationalschools.com (wherever it's hosted), replacing the URL with your
+Vercel deployment's domain:
+
+```html
+<script>window.__CONTENT_API_BASE__ = 'https://your-api-project.vercel.app/api';</script>
+<script src="https://your-api-project.vercel.app/injected-assistant.js"></script>
+<script src="https://your-api-project.vercel.app/injector.js" defer></script>
+```
+
+Once that's live, content saved in the admin dashboard applies to the real site on next
+page load, and the **Element Mappings** / **Live Preview** views (which iframe the real
+site via `VITE_SITE_ORIGIN`) will show the picker highlighting working against it too —
+the real site currently sends no `X-Frame-Options`/CSP `frame-ancestors` header, so it can
+be iframed; if that ever changes, those two views will stop loading and would need the
+iframe origin explicitly allowed.
 
 ### Known Vercel constraints
 - **Upload size:** Vercel serverless functions cap request bodies around 4.5MB; the upload
@@ -170,11 +178,15 @@ of this deployment; it keeps living wherever it lives today.
 
 ```
 nis-admin-suite/
-├─ admin/               # React (Vite) Admin app — its own Vercel-deployable frontend
+├─ admin/               # React (Vite) Admin app — deployed to cPanel, not Vercel
 │  ├─ public/logo.png   # Bundled crest (branding doesn't depend on the live site)
-│  └─ ...                (built to ./admin/dist, which Vercel serves as static output)
+│  ├─ public/.htaccess  # Apache config for cPanel (copied into dist/ by Vite)
+│  ├─ .env.production   # VITE_API_BASE + VITE_SITE_ORIGIN (build-time; see .example)
+│  └─ ...                (built to ./admin/dist, which is uploaded to the cPanel docroot)
 ├─ api/
 │  └─ index.js          # Vercel serverless entry — wraps app.js, no static serving
+├─ public/
+│  └─ index.html        # Vercel's static root — keeps repo source off the CDN
 ├─ app.js                # Shared Express app factory (routes only, no app.listen)
 ├─ server.js             # Local dev entry — app.listen() + serves ./site-build for testing
 ├─ storage.js            # MongoDB/Cloudinary storage layer (with local JSON/disk fallback)
@@ -187,6 +199,7 @@ nis-admin-suite/
 ├─ site-build/          # Local copy of the site, for testing only — not deployed to Vercel
 ├─ uploads/             # Local media fallback — not available on Vercel
 ├─ vercel.json           # Rewrites /api/*, /injector.js, /injected-assistant.js to api/index.js
+├─ DEPLOYMENT.md         # Full Vercel (API) + cPanel (admin) deployment guide
 └─ package.json
 ```
 

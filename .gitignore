@@ -6,6 +6,7 @@ uploads/*
 .env
 .env.local
 admin/.env.local
+admin/.env.production
 .DS_Store
 nohup.out
 .vercel

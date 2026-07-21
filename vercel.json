@@ -1,7 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "npm run build",
-  "outputDirectory": "admin/dist",
+  "outputDirectory": "public",
   "installCommand": "npm install",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api" },

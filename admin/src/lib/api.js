@@ -1,4 +1,10 @@
-const API = "/api";
+// The API is its own deployment (Vercel) and this admin app is served from a
+// different origin (cPanel), so the API's base URL is a BUILD-time setting.
+// Set VITE_API_BASE to the API origin, e.g. https://nis-admin-suite.vercel.app
+// — no trailing slash. Left unset we call same-origin /api, which is what the
+// Vite dev server proxies to the local Express server (see vite.config.js).
+const API_BASE = (import.meta.env.VITE_API_BASE || "").replace(/\/$/, "");
+const API = `${API_BASE}/api`;
 const TOKEN_KEY = "nis_token";
 
 // The real public site (norwegianinternationalschools.com) is a separate

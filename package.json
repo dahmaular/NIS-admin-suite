@@ -4,8 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "postinstall": "npm --prefix admin install && npm --prefix admin run build",
-    "build": "npm --prefix admin run build",
+    "admin:install": "npm --prefix admin install",
+    "build": "npm --prefix admin install && npm --prefix admin run build",
     "start": "node server.js",
     "dev": "node server.js"
   },
