@@ -74,7 +74,7 @@ Six variables. Set every one for **Production**, **Preview** and **Development**
 | `ADMIN_PASSWORD` | a strong password | This is the *only* login credential for the dashboard |
 | `JWT_SECRET` | 32+ random bytes | `openssl rand -base64 32` |
 | `MONGODB_URI` | `mongodb+srv://…` | From A1 |
-| `MONGODB_DB` | `nis-admin` | |
+| `MONGODB_DB` | *(leave unset)* | Defaults to `nis-admin` (`storage.js:177`). ⚠️ If your project already has content, setting this to any other value silently points the API at an empty database and the dashboard will look wiped. Only set it if you deliberately want a different DB name |
 | `CLOUDINARY_URL` | `cloudinary://…` | From A1 |
 | `CLOUDINARY_FOLDER` | `nis-admin` | |
 

@@ -97,7 +97,7 @@ Environment variables required on Vercel (no local-disk fallback exists there):
 | `ADMIN_PASSWORD` | a strong password (never leave as `changeme`) |
 | `JWT_SECRET` | a long random string |
 | `MONGODB_URI` | your MongoDB Atlas connection string |
-| `MONGODB_DB` | `nis-admin` (or your choice) |
+| `MONGODB_DB` | optional — defaults to `nis-admin`; changing it on an existing deployment points at a different (empty) database |
 | `CLOUDINARY_URL` | `cloudinary://<api_key>:<api_secret>@<cloud_name>` |
 | `CLOUDINARY_FOLDER` | `nis-admin` (or your choice) |
 
