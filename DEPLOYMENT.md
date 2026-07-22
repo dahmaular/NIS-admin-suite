@@ -135,13 +135,17 @@ curl -s $API/api/verify -H "Authorization: Bearer $TOKEN"
 # 4. Injector script — should return JavaScript, not HTML or 404
 curl -s -I $API/injector.js | grep -i content-type
 
-# 5. Source files must NOT be reachable — both should 404
-curl -s -o /dev/null -w '%{http_code}\n' $API/app.js
-curl -s -o /dev/null -w '%{http_code}\n' $API/data/content.json
+# 5. Source files must NOT be served — check the BODY, not the status code.
+#    Vercel serves public/index.html as a 200 fallback for unmatched paths, so
+#    a status-code check gives a false 200. What matters is WHAT comes back:
+#    the placeholder HTML (safe) vs. real source (exposed).
+for p in /app.js /storage.js /package.json /data/content.json; do
+  printf '%-24s -> %s\n' "$p" "$(curl -s $API$p | head -c 15)"
+done
+# Every line should print "<!doctype html>" (the public/ placeholder).
+# If any prints real code or JSON (e.g. "import express" or "{"), stop —
+# outputDirectory is not set to public and your server source is exposed.
 ```
-
-If #5 returns `200` for either, stop — `outputDirectory` is not set to `public` and
-your server source is public. Fix `vercel.json` and redeploy.
 
 ---
 

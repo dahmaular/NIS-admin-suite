@@ -2,6 +2,11 @@
   "framework": null,
   "outputDirectory": "public",
   "installCommand": "npm install",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "scripts/**"
+    }
+  },
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api" },
     { "source": "/injector.js", "destination": "/api" },
