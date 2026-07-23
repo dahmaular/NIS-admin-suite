@@ -6,8 +6,8 @@ existing public site which stays wherever it already lives:
 | Piece | What it is | Where it goes | Origin (example) |
 |---|---|---|---|
 | **API** | Express app (`app.js`) wrapped as a serverless function (`api/index.js`) | Vercel | `https://nis-admin-suite.vercel.app` |
-| **Admin** | React/Vite dashboard (`admin/`), a folder of static files | cPanel | `https://admin.norwegianinternationalschools.com` |
-| **Public site** | The real school website (not in this repo) | unchanged | `https://norwegianinternationalschools.com` |
+| **Admin** | React/Vite dashboard (`admin/`), a folder of static files | cPanel | `https://admin.nisng.com` |
+| **Public site** | The real school website (not in this repo) | unchanged | `https://nisng.com` |
 
 The API also serves `/injector.js` and `/injected-assistant.js`, which the public
 site embeds so edits made in the admin show up on the live site.
@@ -158,8 +158,8 @@ you are uploading a folder of HTML/JS/CSS to a document root.
 
 cPanel → **Domains** → **Create A New Domain**:
 
-- **Domain:** `admin.norwegianinternationalschools.com`
-- **Document Root:** `/home/<cpanel-user>/admin.norwegianinternationalschools.com`
+- **Domain:** `admin.nisng.com`
+- **Document Root:** `/home/<cpanel-user>/admin.nisng.com`
   (uncheck "Share document root" — it needs its own directory)
 
 Then cPanel → **SSL/TLS Status** → select the new subdomain → **Run AutoSSL**. Wait
@@ -181,7 +181,7 @@ Edit `admin/.env.production`:
 
 ```bash
 VITE_API_BASE=https://nis-admin-suite.vercel.app
-VITE_SITE_ORIGIN=https://norwegianinternationalschools.com
+VITE_SITE_ORIGIN=https://nisng.com
 ```
 
 Both are **no trailing slash**, and `VITE_API_BASE` is the **origin only** — the code
@@ -233,11 +233,11 @@ missing, create it manually with the contents of `admin/public/.htaccess`.
 ```bash
 # SFTP, if your host allows SSH
 rsync -avz --delete admin/dist/ \
-  <cpanel-user>@<server>:/home/<cpanel-user>/admin.norwegianinternationalschools.com/
+  <cpanel-user>@<server>:/home/<cpanel-user>/admin.nisng.com/
 
 # Plain FTP
 lftp -u <cpanel-user> <server> -e \
-  "mirror -R --delete admin/dist /admin.norwegianinternationalschools.com; bye"
+  "mirror -R --delete admin/dist /admin.nisng.com; bye"
 ```
 
 `--delete` matters — Vite fingerprints filenames, so without it every deploy leaves
@@ -256,7 +256,7 @@ assets/
 
 ### B4. Verify
 
-1. Open `https://admin.norwegianinternationalschools.com` — the login screen renders.
+1. Open `https://admin.nisng.com` — the login screen renders.
 2. Open DevTools → **Network**, then log in. The request must go to
    `https://nis-admin-suite.vercel.app/api/login` — **not** to the cPanel domain. If
    it targets the cPanel domain, `VITE_API_BASE` did not make it into the build (B2).
@@ -298,7 +298,7 @@ If you later want to tighten it, restrict the *authenticated* routes only, and k
 the public GETs open:
 
 ```js
-const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN; // https://admin.norwegianinternationalschools.com
+const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN; // https://admin.nisng.com
 app.use(cors());                                // public reads + injector
 app.use("/api/login", cors({ origin: ADMIN_ORIGIN }));
 ```

@@ -50,7 +50,7 @@ export default function Dashboard({ content, selectors, uploads, onNavigate }) {
         <p className="eyebrow">{today}</p>
         <h2>{greeting()}, Admin 👋</h2>
         <p>
-          Everything on norwegianinternationalschools.com is at your fingertips.
+          Everything on {SITE_ORIGIN.replace(/^https?:\/\//, "") || "your site"} is at your fingertips.
           Change a headline, swap a photo, publish in seconds — no code needed.
         </p>
         <div className="hero-cta">

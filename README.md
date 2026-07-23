@@ -2,7 +2,7 @@
 # NIS Admin Suite (Drop-in CMS for an existing React build)
 
 This project manages the content of an **existing, separately-hosted site**
-(norwegianinternationalschools.com) via:
+(nisng.com) via:
 - a content **Injector** — a small script embedded in the real site's `<head>` that fetches
   content from this project's API and replaces text/images/links at runtime via CSS selectors
   (with a MutationObserver so SPA re-renders stay updated),
@@ -80,7 +80,7 @@ The suite deploys as **two separate pieces on two different hosts**:
   `/injected-assistant.js`. `vercel.json` rewrites those three paths to the function;
   `public/` is the static root so no server source is exposed.
 - **Admin dashboard** (`admin/`, built by Vite) → **cPanel** as plain static files on its
-  own subdomain, e.g. `https://admin.norwegianinternationalschools.com`.
+  own subdomain, e.g. `https://admin.nisng.com`.
 
 Because they're on different origins, the admin is told the API's absolute URL at **build
 time** via `VITE_API_BASE` (see `admin/.env.production.example`) — there is no relative
@@ -110,7 +110,7 @@ belong in `admin/.env.production` on the machine that runs the build — *not* i
 environment, which no longer builds the admin.
 
 **Embed the injector on the real site.** Add this to the `<head>` of
-norwegianinternationalschools.com (wherever it's hosted), replacing the URL with your
+nisng.com (wherever it's hosted), replacing the URL with your
 Vercel deployment's domain:
 
 ```html
