@@ -30,5 +30,15 @@
   "footer.emailAdmin": "schooladmin@norwegianinternationalschools.com",
   "footer.emailAdmissions": "admissions@norwegianinternationalschools.com",
   "footer.emailCareers": "careers@norwegianinternationalschools.com",
-  "footer.copyright": "© 2025 Norwegian International School. All rights reserved."
+  "footer.copyright": "© 2025 Norwegian International School. All rights reserved.",
+  "about.eyebrow": "ABOUT NIS",
+  "about.image": "",
+  "stats.value1": "0+",
+  "stats.value2": "0%",
+  "stats.value3": "0%",
+  "headOfSchool.title": "A Message from Our Head of School",
+  "headOfSchool.message": "<p>At NIS, every student is inspired to achieve their very best. Our commitment is to provide an education that combines academic excellence with genuine care, ensuring that children are not only challenged but also supported every step of the way. We believe a school should be a place where parents see their highest hopes for their children come to life: a safe, caring environment that also challenges them to aim higher and reach further.</p><p>As an international school, NIS combines global standards with a strong sense of community. Our diverse environment reflects the world our students will go on to shape; preparing them with the knowledge, values, and resilience needed to succeed anywhere. With teachers experienced across continents, internationally benchmarked curriculum standards, and a culture that celebrates both academic excellence and personal growth, we are equipping young people not just for examinations, but for life.</p><p>What makes NIS truly special is its spirit. Our students learn in an environment where diversity is celebrated, individuality is embraced, and every child is known and valued. Beyond the classroom, opportunities in arts, sports, culture, and service ensure that children discover their talents, build confidence, and develop into compassionate, well-rounded individuals ready to make a difference in the world.</p><p>The task before us is a shared one. Parents, staff, and community partners all play a vital role in creating the future we want for our children. At NIS, we are committed to working with all our stakeholders to expand opportunities, strengthen our impact, and make this school a model of what international education can achieve in Nigeria and beyond. Together, we have the chance to build something extraordinary, for our students today, and for the generations that will follow.</p>",
+  "headOfSchool.name": "David Roantree",
+  "headOfSchool.role": "Head of School",
+  "testimonials.eyebrow": "TESTIMONIALS"
 }

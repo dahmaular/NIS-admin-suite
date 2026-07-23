@@ -126,5 +126,45 @@
   "footer.copyright": {
     "type": "text",
     "selector": "p[class*='copyright']"
+  },
+  "about.eyebrow": {
+    "type": "text",
+    "selector": "div[class*='aboutCardOverlay'] div[class*='sectionTag']"
+  },
+  "about.image": {
+    "type": "image",
+    "selector": "div[class*='aboutImageLeft'] img"
+  },
+  "stats.value1": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(1) span[class*='statisticNumber']"
+  },
+  "stats.value2": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(2) span[class*='statisticNumber']"
+  },
+  "stats.value3": {
+    "type": "text",
+    "selector": "div[class*='statisticsNumbers'] > div:nth-of-type(3) span[class*='statisticNumber']"
+  },
+  "headOfSchool.title": {
+    "type": "text",
+    "selector": "h2[class*='headOfSchoolTitle']"
+  },
+  "headOfSchool.message": {
+    "type": "html",
+    "selector": "div[class*='headOfSchoolText']"
+  },
+  "headOfSchool.name": {
+    "type": "text",
+    "selector": "p[class*='signatureName']"
+  },
+  "headOfSchool.role": {
+    "type": "text",
+    "selector": "p[class*='signatureTitle']"
+  },
+  "testimonials.eyebrow": {
+    "type": "text",
+    "selector": "div[class*='testimonialContent'] div[class*='sectionTag']"
   }
 }
