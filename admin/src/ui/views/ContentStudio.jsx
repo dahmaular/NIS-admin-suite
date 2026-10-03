@@ -42,7 +42,68 @@ function MediaPickerModal({ uploads, onPick, onClose }) {
   );
 }
 
+// Must match the live site's gallery tabs exactly — the injector shows a photo
+// only under its own category's tab (and always under "All").
+const GALLERY_CATEGORIES = ["Culture", "Academics", "Campus", "Sports", "NIS @ 40"];
+const GALLERY_HEIGHTS = ["tall", "medium", "short"];
+
+function parseGallery(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function GalleryEditor({ value, onChange, onOpenPicker }) {
+  const items = parseGallery(value);
+  const update = (i, patch) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+  const remove = (i) => onChange(items.filter((_, j) => j !== i));
+  const move = (i, d) => {
+    const next = [...items];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <div className="gallery-editor">
+      {items.length === 0 && (
+        <div className="empty-note" style={{ margin: 0 }}>
+          No extra photos yet. They appear after the site's existing gallery photos.
+        </div>
+      )}
+      {items.map((it, i) => (
+        <div className="gallery-item" key={`${it.src}-${i}`}>
+          <img src={it.src} alt="" onError={(e) => { e.target.style.opacity = 0.25; }} />
+          <select value={it.category || GALLERY_CATEGORIES[0]} onChange={(e) => update(i, { category: e.target.value })}>
+            {GALLERY_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={it.height || "medium"} onChange={(e) => update(i, { height: e.target.value })}>
+            {GALLERY_HEIGHTS.map((h) => <option key={h} value={h}>{h}</option>)}
+          </select>
+          <div className="gallery-item-actions">
+            <button className="icon-btn" title="Move up" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
+            <button className="icon-btn" title="Move down" disabled={i === items.length - 1} onClick={() => move(i, 1)}>↓</button>
+            <button className="icon-btn danger" title="Remove from gallery" onClick={() => remove(i)}>
+              <TrashIcon size={14} />
+            </button>
+          </div>
+        </div>
+      ))}
+      <button className="btn btn-soft btn-sm" style={{ marginTop: 8 }} onClick={onOpenPicker}>
+        <PlusIcon size={14} /> Add photo from Media
+      </button>
+    </div>
+  );
+}
+
 function ValueEditor({ type, value, onChange, onOpenPicker }) {
+  if (type === "gallery") {
+    return <GalleryEditor value={value} onChange={onChange} onOpenPicker={onOpenPicker} />;
+  }
+
   if (type === "toggle") {
     const on = value === true || value === "true";
     return (
@@ -122,7 +183,7 @@ export default function ContentStudio({ content, setContent, selectors, uploads,
     if (!query.trim()) return keys;
     const q = query.toLowerCase();
     return keys.filter(
-      (k) => k.toLowerCase().includes(q) || String(draft[k] ?? "").toLowerCase().includes(q)
+      (k) => k.toLowerCase().includes(q) || (typeof draft[k] === "object" ? JSON.stringify(draft[k]) : String(draft[k] ?? "")).toLowerCase().includes(q)
     );
   }, [draft, query]);
 
@@ -258,7 +319,13 @@ export default function ContentStudio({ content, setContent, selectors, uploads,
         <MediaPickerModal
           uploads={uploads}
           onClose={() => setPickerKey(null)}
-          onPick={(url) => { setValue(pickerKey, url); setPickerKey(null); }}
+          onPick={(url) => {
+            const next = selectors[pickerKey]?.type === "gallery"
+              ? [...parseGallery(draft[pickerKey]), { src: url, category: GALLERY_CATEGORIES[0], height: "medium" }]
+              : url;
+            setValue(pickerKey, next);
+            setPickerKey(null);
+          }}
         />
       )}
 

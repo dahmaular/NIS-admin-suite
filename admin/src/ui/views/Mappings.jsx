@@ -3,7 +3,7 @@ import { api, SITE_ORIGIN } from "../../lib/api";
 import { useToast } from "../Toast";
 import { PlusIcon, TrashIcon, PenIcon, CrosshairIcon, RefreshIcon, XIcon } from "../icons";
 
-const TYPES = ["text", "html", "image", "link", "toggle"];
+const TYPES = ["text", "html", "image", "link", "toggle", "gallery"];
 
 export default function Mappings({ selectors, setSelectors, content, setContent }) {
   const toast = useToast();
@@ -86,7 +86,7 @@ export default function Mappings({ selectors, setSelectors, content, setContent 
 
     let nextContent = null;
     if (!(k in content)) {
-      nextContent = { ...content, [k]: type === "toggle" ? true : initialValue };
+      nextContent = { ...content, [k]: type === "toggle" ? true : type === "gallery" ? [] : initialValue };
     }
 
     if (await persist(nextSelectors, nextContent)) {
@@ -153,7 +153,7 @@ export default function Mappings({ selectors, setSelectors, content, setContent 
                 {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            {!editingKey && type !== "toggle" && (
+            {!editingKey && type !== "toggle" && type !== "gallery" && (
               <div className="field">
                 <label>Initial value <span style={{ opacity: 0.6, textTransform: "none" }}>(optional)</span></label>
                 <input
