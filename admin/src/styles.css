@@ -1207,3 +1207,18 @@ code { font-family: var(--mono); }
   .gallery-item { grid-template-columns: 56px 1fr 1fr; }
   .gallery-item-actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
+.gallery-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); }
+.gallery-label span { text-transform: none; font-weight: 400; letter-spacing: 0; }
+.gallery-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
+.gallery-tabs .gallery-label { width: 100%; }
+.gallery-tab-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
+  font-size: 12.5px; background: rgba(90, 100, 128, 0.1); color: var(--ink-soft);
+}
+.gallery-tab-chip.custom { background: rgba(124, 58, 237, 0.1); color: #6d28d9; padding-right: 4px; }
+.gallery-tab-chip button { display: grid; place-items: center; border: 0; background: none; color: inherit; cursor: pointer; padding: 2px; border-radius: 50%; }
+.gallery-tab-chip button:hover { background: rgba(124, 58, 237, 0.18); }
+.gallery-tab-add { display: inline-flex; gap: 6px; align-items: center; }
+.gallery-tab-add input {
+  padding: 6px 10px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 13px; width: 150px; background: #fff;
+}

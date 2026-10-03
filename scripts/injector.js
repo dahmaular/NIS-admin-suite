@@ -63,11 +63,22 @@
     el.style.display = value ? "" : "none";
   }
 
-  // --- gallery: append extra photos after the site's own (hardcoded) ones --- //
-  // Selector points at the masonry grid; value is [{ src, height, category }].
-  // Cards reuse the site's CSS-module classes (e.g. Gallery_galleryCard__Sr2fg),
-  // found at runtime so they survive the site's class hashes changing per build.
+  // --- gallery: admin photos (and admin-created tabs) on the site's gallery --- //
+  // Selector points at the masonry grid. Value is { tabs: ["Graduation"],
+  // images: [{ src, height, category }] } (a bare images array also works).
+  // Admin photos go before the site's own (hardcoded) ones. A photo whose
+  // category is one of `tabs` only shows under that admin-created tab (and
+  // "All"); clicking such a tab hides the site's photos, since the site's
+  // React state knows nothing about it. Cards and tab buttons reuse the site's
+  // CSS-module classes (e.g. Gallery_galleryCard__Sr2fg), found at runtime so
+  // they survive the class hashes changing per build.
   const ADDED = "data-nis-gallery";
+  const ADDED_TAB = "data-nis-tab";
+  const HIDDEN = "data-nis-hidden";
+  const DEMOTED = "data-nis-demoted";
+  let galleryValue = null;
+  let galleryTabsBar = null;
+  let customTab = null; // name of the admin-created tab being shown, if any
 
   function findClass(prefix) {
     const el = document.querySelector(`[class*="${prefix}"]`);
@@ -85,9 +96,13 @@
   }
 
   function parseGallery(value) {
-    let items = value;
-    if (typeof items === "string") { try { items = JSON.parse(items); } catch (e) { return []; } }
-    return Array.isArray(items) ? items.filter((i) => i && i.src) : [];
+    let v = value;
+    if (typeof v === "string") { try { v = JSON.parse(v); } catch (e) { v = null; } }
+    if (Array.isArray(v)) v = { images: v };
+    v = v && typeof v === "object" ? v : {};
+    const tabs = Array.isArray(v.tabs) ? v.tabs.map((t) => String(t).trim()).filter(Boolean) : [];
+    const images = Array.isArray(v.images) ? v.images.filter((i) => i && i.src) : [];
+    return { tabs, images };
   }
 
   function openLightbox(srcs, index) {
@@ -119,20 +134,122 @@
     show();
   }
 
+  function galleryModule(grid) {
+    return (Array.from(grid.classList).find((c) => /_masonryGallery__/.test(c)) || "").split("_")[0] || "Gallery";
+  }
+
+  // Add/refresh the admin-created tab buttons and keep the active styling in
+  // step with customTab. Site tabs are React's; we only swap their classes
+  // while a custom tab is showing and put them back when it isn't.
+  function syncTabs(module, tabs) {
+    const bar = document.querySelector(`[class*="${module}_categoryTabs__"]`);
+    if (!bar) return;
+    if (bar !== galleryTabsBar) {
+      galleryTabsBar = bar;
+      customTab = null; // new page render: React is back on its own tab
+      // A click on a site tab leaves any custom tab. React then shows its
+      // loading state by reusing the grid element, so clear our cards now
+      // (or the old tab's photos linger under the spinner) and re-add the
+      // right ones as soon as the grid is back on the clicked tab. If React
+      // ignores the click (already on that tab) that happens straight away.
+      bar.addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b || b.hasAttribute(ADDED_TAB) || b.disabled) return;
+        const name = b.textContent.trim();
+        customTab = null;
+        // Undo our custom-tab styling before React reconciles the buttons.
+        const tabCls = findClass(`${module}_tab__`);
+        const activeCls = findClass(`${module}_activeTab__`);
+        bar.querySelectorAll(`[${DEMOTED}]`).forEach((d) => { d.classList.replace(tabCls, activeCls); d.removeAttribute(DEMOTED); });
+        bar.querySelectorAll(`[${ADDED_TAB}]`).forEach((d) => { d.className = tabCls; });
+        document.querySelectorAll(`[${HIDDEN}]`).forEach((h) => { h.removeAttribute(HIDDEN); h.style.display = ""; });
+        document.querySelectorAll(`[${ADDED}]`).forEach((n) => {
+          if (n.parentElement && !n.matches(`[class*="_masonryGallery__"]`)) n.remove();
+          else n.removeAttribute(ADDED);
+        });
+        let tries = 0;
+        const timer = setInterval(() => {
+          const active = bar.querySelector(`button[class*="${module}_activeTab__"]:not([${ADDED_TAB}])`);
+          const ready = document.querySelector(`[class*="_masonryGallery__"]`) && active && active.textContent.trim() === name;
+          if (ready || ++tries > 80) { clearInterval(timer); refreshGallery(); }
+        }, 100);
+      }, true);
+    }
+    if (customTab && !tabs.includes(customTab)) customTab = null;
+
+    const cls = (name) => findClass(`${module}_${name}__`);
+    const tabCls = cls("tab");
+    const activeCls = cls("activeTab");
+    const current = Array.from(bar.querySelectorAll(`[${ADDED_TAB}]`));
+    if (current.map((b) => b.textContent).join("|") !== tabs.join("|")) {
+      current.forEach((b) => b.remove());
+      tabs.forEach((name) => {
+        const b = document.createElement("button");
+        b.setAttribute(ADDED_TAB, "");
+        b.type = "button";
+        b.textContent = name;
+        b.addEventListener("click", () => {
+          if (customTab === name) return;
+          customTab = name;
+          refreshGallery();
+        });
+        bar.appendChild(b);
+      });
+    }
+    bar.querySelectorAll(`[${ADDED_TAB}]`).forEach((b) => {
+      b.className = b.textContent === customTab ? activeCls : tabCls;
+    });
+    // Site tabs: demote React's active one while a custom tab shows.
+    bar.querySelectorAll(`button:not([${ADDED_TAB}])`).forEach((b) => {
+      if (customTab && b.classList.contains(activeCls)) {
+        b.classList.replace(activeCls, tabCls);
+        b.setAttribute(DEMOTED, "");
+      } else if (!customTab && b.hasAttribute(DEMOTED)) {
+        b.classList.replace(tabCls, activeCls);
+        b.removeAttribute(DEMOTED);
+      }
+    });
+    return bar;
+  }
+
+  function refreshGallery() {
+    applying = true;
+    document.querySelectorAll(`[class*="_masonryGallery__"]`).forEach((g) => setGallery(g, galleryValue));
+    setTimeout(() => { applying = false; }, 50);
+  }
+
   function setGallery(grid, value) {
     if (!grid) return;
-    const module = (Array.from(grid.classList).find((c) => /_masonryGallery__/.test(c)) || "").split("_")[0] || "Gallery";
-    const active = document.querySelector(`[class*="${module}_activeTab__"]`);
-    const tab = active ? active.textContent.trim() : "All";
-    const items = parseGallery(value).filter((i) => tab === "All" || i.category === tab);
+    galleryValue = value;
+    const { tabs, images } = parseGallery(value);
+    const module = galleryModule(grid);
+    const bar = syncTabs(module, tabs);
+
+    let tab = "All";
+    if (customTab) {
+      tab = customTab;
+    } else if (bar) {
+      const active = bar.querySelector(`button[class*="${module}_activeTab__"]:not([${ADDED_TAB}])`);
+      if (active) tab = active.textContent.trim();
+    }
+    const items = images.filter((i) => tab === "All" || i.category === tab);
+
+    // Hide the site's own photos while a custom tab shows; restore otherwise.
+    Array.from(grid.children).forEach((c) => {
+      if (c.hasAttribute(ADDED)) return;
+      if (customTab && !c.hasAttribute(HIDDEN)) { c.setAttribute(HIDDEN, ""); c.style.display = "none"; }
+      if (!customTab && c.hasAttribute(HIDDEN)) { c.removeAttribute(HIDDEN); c.style.display = ""; }
+    });
 
     const signature = tab + "|" + JSON.stringify(items);
     const existing = grid.querySelectorAll(`[${ADDED}]`);
-    if (grid.getAttribute(ADDED) === signature && existing.length === items.length) return;
+    const inPlace = !items.length || grid.firstElementChild === existing[0];
+    if (grid.getAttribute(ADDED) === signature && existing.length === items.length && inPlace) return;
     existing.forEach((n) => n.remove());
     grid.setAttribute(ADDED, signature);
 
     const cls = (name) => findClass(`${module}_${name}__`);
+    const first = grid.firstChild;
     items.forEach((item) => {
       const card = document.createElement("div");
       card.setAttribute(ADDED, "");
@@ -150,12 +267,12 @@
       box.append(img, overlay);
       card.appendChild(box);
       // The site's own lightbox only knows its hardcoded list, so open ours,
-      // stepping through every photo currently in the grid.
+      // stepping through every photo currently visible in the grid.
       card.addEventListener("click", () => {
-        const imgs = Array.from(grid.querySelectorAll("img"));
+        const imgs = Array.from(grid.querySelectorAll("img")).filter((n) => n.offsetParent !== null);
         openLightbox(imgs.map((n) => n.src), Math.max(0, imgs.indexOf(img)));
       });
-      grid.appendChild(card);
+      grid.insertBefore(card, first); // admin photos lead, site photos follow
     });
   }
 

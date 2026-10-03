@@ -86,7 +86,7 @@ export default function Mappings({ selectors, setSelectors, content, setContent 
 
     let nextContent = null;
     if (!(k in content)) {
-      nextContent = { ...content, [k]: type === "toggle" ? true : type === "gallery" ? [] : initialValue };
+      nextContent = { ...content, [k]: type === "toggle" ? true : type === "gallery" ? { tabs: [], images: [] } : initialValue };
     }
 
     if (await persist(nextSelectors, nextContent)) {

@@ -42,57 +42,110 @@ function MediaPickerModal({ uploads, onPick, onClose }) {
   );
 }
 
-// Must match the live site's gallery tabs exactly — the injector shows a photo
-// only under its own category's tab (and always under "All").
-const GALLERY_CATEGORIES = ["Culture", "Academics", "Campus", "Sports", "NIS @ 40"];
+// The live site's own gallery tabs (hardcoded in its bundle). Admin-created
+// tabs are stored in the gallery value's `tabs` and added to the site's tab bar
+// by the injector. A photo shows under its category's tab and always under "All".
+const SITE_GALLERY_TABS = ["Culture", "Academics", "Campus", "Sports", "NIS @ 40"];
 const GALLERY_HEIGHTS = ["tall", "medium", "short"];
 
+// { tabs: [...], images: [...] } — an older bare images array still loads.
 function parseGallery(value) {
-  if (Array.isArray(value)) return value;
-  try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+  let v = value;
+  if (typeof v === "string") {
+    try { v = JSON.parse(v); } catch { v = null; }
   }
+  if (Array.isArray(v)) v = { images: v };
+  v = v && typeof v === "object" ? v : {};
+  return {
+    tabs: Array.isArray(v.tabs) ? v.tabs : [],
+    images: Array.isArray(v.images) ? v.images : [],
+  };
 }
 
 function GalleryEditor({ value, onChange, onOpenPicker }) {
-  const items = parseGallery(value);
-  const update = (i, patch) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
-  const remove = (i) => onChange(items.filter((_, j) => j !== i));
+  const toast = useToast();
+  const { tabs, images } = parseGallery(value);
+  const [newTab, setNewTab] = useState("");
+  const categories = [...SITE_GALLERY_TABS, ...tabs];
+
+  const setImages = (next) => onChange({ tabs, images: next });
+  const update = (i, patch) => setImages(images.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+  const remove = (i) => setImages(images.filter((_, j) => j !== i));
   const move = (i, d) => {
-    const next = [...items];
+    const next = [...images];
     [next[i], next[i + d]] = [next[i + d], next[i]];
-    onChange(next);
+    setImages(next);
   };
+
+  function addTab() {
+    const name = newTab.trim();
+    if (!name) return;
+    if (name.toLowerCase() === "all" || categories.some((c) => c.toLowerCase() === name.toLowerCase())) {
+      return toast(`There's already a "${name}" tab`, "err");
+    }
+    onChange({ tabs: [...tabs, name], images });
+    setNewTab("");
+  }
+
+  function removeTab(name) {
+    const using = images.filter((it) => it.category === name).length;
+    const msg = using
+      ? `Remove the "${name}" tab? Its ${using} photo${using === 1 ? "" : "s"} will move to "${SITE_GALLERY_TABS[0]}".`
+      : `Remove the "${name}" tab?`;
+    if (!confirm(msg)) return;
+    onChange({
+      tabs: tabs.filter((t) => t !== name),
+      images: images.map((it) => (it.category === name ? { ...it, category: SITE_GALLERY_TABS[0] } : it)),
+    });
+  }
 
   return (
     <div className="gallery-editor">
-      {items.length === 0 && (
-        <div className="empty-note" style={{ margin: 0 }}>
-          No extra photos yet. They appear after the site's existing gallery photos.
-        </div>
+      <div className="gallery-tabs">
+        <span className="gallery-label">Tabs</span>
+        {SITE_GALLERY_TABS.map((t) => (
+          <span key={t} className="gallery-tab-chip" title="Built into the site">{t}</span>
+        ))}
+        {tabs.map((t) => (
+          <span key={t} className="gallery-tab-chip custom">
+            {t}
+            <button title={`Remove the "${t}" tab`} onClick={() => removeTab(t)}><XIcon size={12} /></button>
+          </span>
+        ))}
+        <span className="gallery-tab-add">
+          <input
+            value={newTab}
+            onChange={(e) => setNewTab(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") addTab(); }}
+            placeholder="New tab name"
+          />
+          <button className="btn btn-soft btn-sm" onClick={addTab}><PlusIcon size={13} /> Add tab</button>
+        </span>
+      </div>
+
+      <span className="gallery-label">Photos <span>(shown first, before the site's existing photos)</span></span>
+      {images.length === 0 && (
+        <div className="empty-note" style={{ margin: 0 }}>No photos added yet.</div>
       )}
-      {items.map((it, i) => (
+      {images.map((it, i) => (
         <div className="gallery-item" key={`${it.src}-${i}`}>
           <img src={it.src} alt="" onError={(e) => { e.target.style.opacity = 0.25; }} />
-          <select value={it.category || GALLERY_CATEGORIES[0]} onChange={(e) => update(i, { category: e.target.value })}>
-            {GALLERY_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          <select value={it.category || SITE_GALLERY_TABS[0]} onChange={(e) => update(i, { category: e.target.value })}>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={it.height || "medium"} onChange={(e) => update(i, { height: e.target.value })}>
             {GALLERY_HEIGHTS.map((h) => <option key={h} value={h}>{h}</option>)}
           </select>
           <div className="gallery-item-actions">
             <button className="icon-btn" title="Move up" disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
-            <button className="icon-btn" title="Move down" disabled={i === items.length - 1} onClick={() => move(i, 1)}>↓</button>
+            <button className="icon-btn" title="Move down" disabled={i === images.length - 1} onClick={() => move(i, 1)}>↓</button>
             <button className="icon-btn danger" title="Remove from gallery" onClick={() => remove(i)}>
               <TrashIcon size={14} />
             </button>
           </div>
         </div>
       ))}
-      <button className="btn btn-soft btn-sm" style={{ marginTop: 8 }} onClick={onOpenPicker}>
+      <button className="btn btn-soft btn-sm" style={{ marginTop: 8, alignSelf: "flex-start" }} onClick={onOpenPicker}>
         <PlusIcon size={14} /> Add photo from Media
       </button>
     </div>
@@ -321,7 +374,11 @@ export default function ContentStudio({ content, setContent, selectors, uploads,
           onClose={() => setPickerKey(null)}
           onPick={(url) => {
             const next = selectors[pickerKey]?.type === "gallery"
-              ? [...parseGallery(draft[pickerKey]), { src: url, category: GALLERY_CATEGORIES[0], height: "medium" }]
+              ? (({ tabs, images }) => ({
+                  tabs,
+                  // New photos default to the last tab added, else the site's first tab
+                  images: [...images, { src: url, category: tabs[tabs.length - 1] || SITE_GALLERY_TABS[0], height: "medium" }],
+                }))(parseGallery(draft[pickerKey]))
               : url;
             setValue(pickerKey, next);
             setPickerKey(null);
